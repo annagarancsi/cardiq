@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { v4 as uuidv4 } from "crypto";
 import { createUser, getUserByEmail } from "@/lib/db";
 import { hashPassword, createSessionToken, setSessionCookie } from "@/lib/auth";
 
