@@ -4,53 +4,41 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shield, Lock, CheckCircle, ArrowLeft, Loader2 } from "lucide-react";
 
-const MOCK_BANKS = [
-  { id: "chase", name: "Chase", logo: "🏦" },
-  { id: "amex", name: "American Express", logo: "💳" },
-  { id: "citi", name: "Citi", logo: "🏛️" },
-  { id: "bofa", name: "Bank of America", logo: "🔴" },
-  { id: "capital-one", name: "Capital One", logo: "⚡" },
-  { id: "wells-fargo", name: "Wells Fargo", logo: "🐎" },
-  { id: "discover", name: "Discover", logo: "🟠" },
-  { id: "usbank", name: "US Bank", logo: "🇺🇸" },
+// All cards imported across all linked accounts
+const ALL_PLAID_CARDS = [
+  "chase-sapphire-reserve",
+  "amex-platinum",
+  "citi-double-cash",
+  "capital-one-venture-x",
 ];
 
-// Cards that get auto-imported per bank (mix of issuers for realism)
-const PLAID_IMPORTED_CARDS: Record<string, string[]> = {
-  chase: ["chase-sapphire-reserve", "chase-freedom-unlimited", "amex-gold"],
-  amex: ["amex-platinum", "amex-gold", "chase-sapphire-preferred"],
-  citi: ["citi-double-cash", "chase-sapphire-preferred", "capital-one-venture-x"],
-  bofa: ["chase-freedom-flex", "citi-double-cash", "amex-gold"],
-  "capital-one": ["capital-one-venture-x", "chase-freedom-unlimited", "citi-double-cash"],
-  "wells-fargo": ["chase-sapphire-preferred", "amex-gold", "citi-double-cash"],
-  discover: ["chase-freedom-flex", "citi-double-cash", "capital-one-venture-x"],
-  usbank: ["chase-sapphire-reserve", "amex-platinum", "citi-double-cash"],
-};
+const SCANNING_BANKS = [
+  { name: "Chase", logo: "🏦" },
+  { name: "American Express", logo: "💳" },
+  { name: "Citi", logo: "🏛️" },
+  { name: "Capital One", logo: "⚡" },
+];
 
-type Step = "select-bank" | "credentials" | "connecting" | "success";
+type Step = "credentials" | "connecting" | "success";
 
 export default function PlaidOnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>("select-bank");
-  const [selectedBank, setSelectedBank] = useState<string | null>(null);
+  const [step, setStep] = useState<Step>("credentials");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [importedCount, setImportedCount] = useState(0);
-
-  function handleBankSelect(bankId: string) {
-    setSelectedBank(bankId);
-    setStep("credentials");
-  }
+  const [scanStep, setScanStep] = useState(0);
 
   async function handleConnect() {
     setStep("connecting");
 
-    // Simulate connection delay, then save cards
-    await new Promise((res) => setTimeout(res, 2500));
+    // Animate through each bank being scanned
+    for (let i = 0; i <= SCANNING_BANKS.length; i++) {
+      await new Promise((res) => setTimeout(res, 700));
+      setScanStep(i);
+    }
 
-    // Save the mock imported cards for this bank
-    const cardsToImport = PLAID_IMPORTED_CARDS[selectedBank ?? "chase"] ?? [];
-    for (const cardId of cardsToImport) {
+    // Save all cards
+    for (const cardId of ALL_PLAID_CARDS) {
       await fetch("/api/cards/user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,7 +46,6 @@ export default function PlaidOnboardingPage() {
       });
     }
 
-    setImportedCount(cardsToImport.length);
     setStep("success");
   }
 
@@ -66,8 +53,8 @@ export default function PlaidOnboardingPage() {
     <div className="min-h-screen bg-gradient-to-br from-brand-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
 
-        {/* Step 1 — Select bank */}
-        {step === "select-bank" && (
+        {/* Step 1 — Credentials */}
+        {step === "credentials" && (
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
               <button
@@ -77,86 +64,43 @@ export default function PlaidOnboardingPage() {
                 <ArrowLeft className="w-4 h-4 text-gray-400" />
               </button>
               <div>
-                <h1 className="text-base font-semibold text-gray-900">Connect your bank</h1>
-                <p className="text-xs text-gray-400">Secured by Plaid · Read-only access</p>
-              </div>
-            </div>
-
-            <div className="p-4">
-              <div className="flex items-center gap-2 bg-green-50 rounded-xl px-3 py-2 mb-4">
-                <Shield className="w-4 h-4 text-green-600 shrink-0" />
-                <p className="text-xs text-green-700">
-                  CardIQ never sees your bank password. Plaid uses 256-bit encryption.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                {MOCK_BANKS.map((bank) => (
-                  <button
-                    key={bank.id}
-                    onClick={() => handleBankSelect(bank.id)}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-brand-300 hover:bg-brand-50 transition-all text-left"
-                  >
-                    <span className="text-2xl">{bank.logo}</span>
-                    <span className="text-sm font-medium text-gray-700">{bank.name}</span>
-                  </button>
-                ))}
-              </div>
-
-              <p className="text-center text-xs text-gray-400 mt-4">
-                Don&apos;t see your bank?{" "}
-                <button
-                  onClick={() => router.push("/onboarding/manual")}
-                  className="text-brand-600 hover:underline"
-                >
-                  Add cards manually
-                </button>
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2 — Credentials */}
-        {step === "credentials" && (
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-              <button
-                onClick={() => setStep("select-bank")}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4 text-gray-400" />
-              </button>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{MOCK_BANKS.find((b) => b.id === selectedBank)?.logo}</span>
-                <div>
-                  <h1 className="text-base font-semibold text-gray-900">
-                    {MOCK_BANKS.find((b) => b.id === selectedBank)?.name}
-                  </h1>
-                  <p className="text-xs text-gray-400">Enter your online banking credentials</p>
-                </div>
+                <h1 className="text-base font-semibold text-gray-900">Connect with Plaid</h1>
+                <p className="text-xs text-gray-400">Secured · Read-only access</p>
               </div>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="flex items-center gap-2 bg-blue-50 rounded-xl px-3 py-2">
+              <div className="flex items-center gap-2 bg-blue-50 rounded-xl px-3 py-2.5">
                 <Lock className="w-4 h-4 text-blue-600 shrink-0" />
                 <p className="text-xs text-blue-700">
-                  Your credentials go directly to {MOCK_BANKS.find((b) => b.id === selectedBank)?.name}. CardIQ never receives them.
+                  Your credentials are encrypted end-to-end. CardIQ never stores or sees your password.
                 </p>
               </div>
 
+              {/* Bank logos */}
+              <div className="flex items-center justify-center gap-3 py-2">
+                {SCANNING_BANKS.map((b) => (
+                  <div key={b.name} className="flex flex-col items-center gap-1">
+                    <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-xl border border-gray-100">
+                      {b.logo}
+                    </div>
+                    <span className="text-xs text-gray-400">{b.name}</span>
+                  </div>
+                ))}
+              </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Plaid username</label>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="input"
-                  placeholder="Online banking username"
+                  placeholder="Enter your username"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Plaid password</label>
                 <input
                   type="password"
                   value={password}
@@ -170,57 +114,79 @@ export default function PlaidOnboardingPage() {
                 onClick={handleConnect}
                 disabled={!username || !password}
                 className={`w-full py-2.5 rounded-xl font-medium transition-all ${
-                  username && password ? "btn-primary" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  username && password
+                    ? "btn-primary"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 }`}
               >
                 Connect securely
               </button>
 
-              <p className="text-center text-xs text-gray-400">
-                By connecting, you agree to Plaid&apos;s{" "}
-                <span className="text-brand-600 cursor-pointer">Terms of Service</span> and{" "}
-                <span className="text-brand-600 cursor-pointer">Privacy Policy</span>
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3 — Connecting animation */}
-        {step === "connecting" && (
-          <div className="bg-white rounded-2xl shadow-lg p-10 text-center">
-            <Loader2 className="w-10 h-10 text-brand-500 animate-spin mx-auto mb-4" />
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Connecting securely…</h2>
-            <p className="text-sm text-gray-400">Importing your cards and recent transactions</p>
-            <div className="mt-6 space-y-2">
-              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-brand-500 rounded-full animate-pulse w-3/4" />
+              <div className="flex items-center gap-2 justify-center">
+                <Shield className="w-3.5 h-3.5 text-gray-300" />
+                <p className="text-center text-xs text-gray-400">
+                  256-bit encryption · Plaid&apos;s{" "}
+                  <span className="text-brand-600 cursor-pointer">Terms</span> &{" "}
+                  <span className="text-brand-600 cursor-pointer">Privacy Policy</span> apply
+                </p>
               </div>
-              <p className="text-xs text-gray-400">Scanning accounts…</p>
             </div>
           </div>
         )}
 
-        {/* Step 4 — Success */}
+        {/* Step 2 — Connecting / scanning banks */}
+        {step === "connecting" && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="text-center mb-6">
+              <Loader2 className="w-10 h-10 text-brand-500 animate-spin mx-auto mb-3" />
+              <h2 className="text-lg font-semibold text-gray-900 mb-1">Scanning your accounts…</h2>
+              <p className="text-sm text-gray-400">Importing cards and transactions from all linked banks</p>
+            </div>
+
+            <div className="space-y-3">
+              {SCANNING_BANKS.map((bank, i) => (
+                <div key={bank.name} className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                  scanStep > i ? "bg-green-50" : scanStep === i ? "bg-brand-50" : "bg-gray-50"
+                }`}>
+                  <span className="text-xl">{bank.logo}</span>
+                  <span className="text-sm font-medium text-gray-700 flex-1">{bank.name}</span>
+                  {scanStep > i ? (
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  ) : scanStep === i ? (
+                    <Loader2 className="w-4 h-4 text-brand-500 animate-spin" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border-2 border-gray-200" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3 — Success */}
         {step === "success" && (
-          <div className="bg-white rounded-2xl shadow-lg p-10 text-center">
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Connected!</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">All accounts connected!</h2>
             <p className="text-sm text-gray-500 mb-1">
-              We found <strong>{importedCount} credit cards</strong> and imported{" "}
-              <strong>30 recent transactions</strong>.
+              We found <strong>{ALL_PLAID_CARDS.length} credit cards</strong> across{" "}
+              <strong>{SCANNING_BANKS.length} banks</strong>
             </p>
             <p className="text-xs text-gray-400 mb-6">
-              CardIQ will now track your benefits and help you maximize every perk.
+              and imported <strong>30 recent transactions</strong>
             </p>
 
-            {/* Card summary chips */}
-            <div className="flex flex-wrap gap-2 justify-center mb-6">
-              {(PLAID_IMPORTED_CARDS[selectedBank ?? "chase"] ?? []).map((cardId) => (
-                <span key={cardId} className="text-xs bg-brand-50 text-brand-700 px-2 py-1 rounded-full font-medium">
-                  {cardId.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
-                </span>
+            {/* Imported cards */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left space-y-2">
+              {ALL_PLAID_CARDS.map((cardId) => (
+                <div key={cardId} className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                  <span className="text-sm text-gray-700">
+                    {cardId.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+                  </span>
+                </div>
               ))}
             </div>
 
