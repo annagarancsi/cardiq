@@ -9,6 +9,7 @@ const COOKIE_NAME = "cardiq_session";
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
+  const isOnboarding = pathname.startsWith("/onboarding");
   const isApi = pathname.startsWith("/api/");
 
   // API routes handle their own auth checks internally
@@ -26,12 +27,19 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Unauthenticated users can't access app or onboarding pages
   if (!isAuthed && !isAuthPage) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Authenticated users shouldn't see login/signup
   if (isAuthed && isAuthPage) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // Authenticated users can freely access onboarding
+  if (isAuthed && isOnboarding) {
+    return NextResponse.next();
   }
 
   return NextResponse.next();

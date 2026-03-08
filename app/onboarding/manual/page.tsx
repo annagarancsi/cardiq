@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Search, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Search, Check } from "lucide-react";
 import { CARD_CATALOG } from "@/lib/mock-data/cards";
 import { formatCurrency } from "@/lib/utils";
 
@@ -20,6 +20,7 @@ export default function ManualOnboardingPage() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const filtered = CARD_CATALOG.filter(
     (c) =>
@@ -44,40 +45,33 @@ export default function ManualOnboardingPage() {
   }
 
   async function handleSave() {
-    if (selected.size === 0) {
-      router.push("/dashboard");
-      return;
-    }
+    if (selected.size === 0) return;
 
     setSaving(true);
+    setError("");
 
-    // Add each selected card
-    await Promise.all(
-      Array.from(selected).map((cardId) =>
-        fetch("/api/cards", {
+    try {
+      // Add each selected card one by one
+      for (const cardId of Array.from(selected)) {
+        const res = await fetch("/api/cards/user", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cardId }),
-        })
-      )
-    );
-
-    // Remove the 3 demo cards if user picked their own
-    const demoCards = ["amex-gold", "chase-sapphire-preferred", "chase-freedom-unlimited"];
-    const demosToRemove = demoCards.filter((id) => !selected.has(id));
-    await Promise.all(
-      demosToRemove.map((cardId) =>
-        fetch(`/api/cards?cardId=${cardId}`, { method: "DELETE" })
-      )
-    );
-
-    router.push("/dashboard");
+        });
+        if (!res.ok) throw new Error("Failed to add card");
+      }
+      router.push("/dashboard");
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setSaving(false);
+    }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col" style={{ maxHeight: "90vh" }}>
+
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3 shrink-0">
             <button
@@ -89,9 +83,16 @@ export default function ManualOnboardingPage() {
             <div className="flex-1">
               <h1 className="text-base font-semibold text-gray-900">Select your cards</h1>
               <p className="text-xs text-gray-400">
-                {selected.size === 0 ? "Pick all the cards you own" : `${selected.size} card${selected.size !== 1 ? "s" : ""} selected`}
+                {selected.size === 0
+                  ? "Pick all the cards you currently own"
+                  : `${selected.size} card${selected.size !== 1 ? "s" : ""} selected`}
               </p>
             </div>
+            {selected.size > 0 && (
+              <span className="text-xs bg-brand-100 text-brand-700 font-semibold px-2 py-1 rounded-full">
+                {selected.size} selected
+              </span>
+            )}
           </div>
 
           {/* Search */}
@@ -102,7 +103,7 @@ export default function ManualOnboardingPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search cards…"
+                placeholder="Search by card name or bank…"
                 className="input pl-9"
               />
             </div>
@@ -112,7 +113,7 @@ export default function ManualOnboardingPage() {
           <div className="flex-1 overflow-y-auto p-4 space-y-5">
             {Object.entries(byTier).map(([tier, cards]) => (
               <div key={tier}>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                   {TIER_LABELS[tier]}
                 </p>
                 <div className="space-y-2">
@@ -123,24 +124,33 @@ export default function ManualOnboardingPage() {
                       <button
                         key={card.id}
                         onClick={() => toggleCard(card.id)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
                           isSelected
-                            ? "border-brand-400 bg-brand-50"
-                            : "border-gray-100 hover:border-gray-300 hover:bg-gray-50"
+                            ? "border-brand-500 bg-brand-50"
+                            : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
                         }`}
                       >
+                        {/* Card color swatch */}
                         <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${card.color} shrink-0`} />
+
+                        {/* Card info */}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">{card.name}</p>
                           <p className="text-xs text-gray-400">
                             {card.annualFee === 0 ? "No annual fee" : `${formatCurrency(card.annualFee)}/yr`}
-                            {benefitTotal > 0 && ` · ${formatCurrency(benefitTotal)} in benefits`}
+                            {benefitTotal > 0 && (
+                              <span className="text-green-600 font-medium"> · {formatCurrency(benefitTotal)} benefits</span>
+                            )}
                           </p>
                         </div>
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected ? "border-brand-600 bg-brand-600" : "border-gray-300"
+
+                        {/* Checkbox */}
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                          isSelected
+                            ? "border-brand-600 bg-brand-600"
+                            : "border-gray-300"
                         }`}>
-                          {isSelected && <CheckCircle className="w-4 h-4 text-white fill-white" />}
+                          {isSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
                         </div>
                       </button>
                     );
@@ -148,25 +158,44 @@ export default function ManualOnboardingPage() {
                 </div>
               </div>
             ))}
+
+            {Object.keys(byTier).length === 0 && (
+              <div className="text-center py-8 text-gray-400 text-sm">
+                No cards found for &quot;{search}&quot;
+              </div>
+            )}
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-4 border-t border-gray-100 shrink-0">
+          <div className="px-4 py-4 border-t border-gray-100 shrink-0 space-y-2">
+            {error && (
+              <p className="text-sm text-red-600 text-center">{error}</p>
+            )}
             <button
               onClick={handleSave}
-              disabled={saving}
-              className="btn-primary w-full py-2.5 flex items-center justify-center gap-2"
+              disabled={saving || selected.size === 0}
+              className={`w-full py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${
+                selected.size === 0
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "btn-primary"
+              }`}
             >
               {saving ? (
-                "Saving…"
-              ) : selected.size === 0 ? (
-                "Skip — use demo cards"
-              ) : (
+                "Saving your cards…"
+              ) : selected.size > 0 ? (
                 <>
                   Add {selected.size} card{selected.size !== 1 ? "s" : ""} to my portfolio
                   <ArrowRight className="w-4 h-4" />
                 </>
+              ) : (
+                "Select at least one card"
               )}
+            </button>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="w-full text-center text-xs text-gray-400 hover:text-gray-600 py-1 transition-colors"
+            >
+              Skip for now
             </button>
           </div>
         </div>
