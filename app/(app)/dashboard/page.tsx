@@ -5,7 +5,8 @@ import type { CardCatalogEntry, BenefitStatus, PortfolioSummary } from "@/types"
 import PortfolioSummaryComponent from "@/components/dashboard/PortfolioSummary";
 import CardBenefitCard from "@/components/dashboard/CardBenefitCard";
 import ManageCardsModal from "@/components/dashboard/ManageCardsModal";
-import { Loader2, Settings2 } from "lucide-react";
+import { Loader2, Settings2, CreditCard } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface BenefitState {
   status: BenefitStatus;
@@ -21,6 +22,7 @@ interface BenefitTracking {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [cards, setCards] = useState<CardCatalogEntry[]>([]);
   const [benefitStates, setBenefitStates] = useState<Record<string, BenefitState>>({});
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,7 @@ export default function DashboardPage() {
   }
 
   async function handleAddCard(cardId: string) {
-    await fetch("/api/cards", {
+    await fetch("/api/cards/user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cardId }),
@@ -78,7 +80,7 @@ export default function DashboardPage() {
   }
 
   async function handleRemoveCard(cardId: string) {
-    await fetch(`/api/cards?cardId=${cardId}`, { method: "DELETE" });
+    await fetch(`/api/cards/user?cardId=${cardId}`, { method: "DELETE" });
     await fetchData();
   }
 
@@ -144,13 +146,25 @@ export default function DashboardPage() {
       {/* Per-card sections */}
       {cards.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-gray-400 text-sm mb-3">No cards added yet.</p>
-          <button
-            onClick={() => setShowManage(true)}
-            className="btn-primary"
-          >
-            Add your first card
-          </button>
+          <div className="w-14 h-14 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <CreditCard className="w-7 h-7 text-brand-500" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-900 mb-1">No cards added yet</h3>
+          <p className="text-gray-400 text-sm mb-5">Add your credit cards to start tracking benefits</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => router.push("/onboarding/plaid")}
+              className="btn-primary flex items-center justify-center gap-2"
+            >
+              Connect via Plaid
+            </button>
+            <button
+              onClick={() => router.push("/onboarding/manual")}
+              className="btn-secondary flex items-center justify-center gap-2"
+            >
+              Add cards manually
+            </button>
+          </div>
         </div>
       ) : (
         <div className="grid gap-6">
