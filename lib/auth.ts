@@ -31,7 +31,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 // ─── JWT helpers ──────────────────────────────────────────────────────────────
 
 export async function createSessionToken(payload: SessionPayload): Promise<string> {
-  return new SignJWT(payload)
+  return new SignJWT(payload as unknown as Record<string, unknown>)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("30d")
