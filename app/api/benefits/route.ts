@@ -4,16 +4,14 @@ import { getUserCards, getBenefitTracking } from "@/lib/db";
 import { CARD_CATALOG } from "@/lib/mock-data/cards";
 import type { BenefitStatus } from "@/types";
 
-const DEMO_CARDS = ["amex-gold", "chase-sapphire-preferred", "chase-freedom-unlimited"];
-
 // GET /api/benefits — get benefit tracking state for user's cards
 export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const tracking = getBenefitTracking(session.userId);
-  const userCardIds = getUserCards(session.userId);
-  const cardIds = userCardIds.length === 0 ? DEMO_CARDS : userCardIds;
+  // Always read from the file — demo cards are seeded by /api/cards/user on first load
+  const cardIds = getUserCards(session.userId);
 
   const benefits = cardIds.flatMap((cardId) => {
     const card = CARD_CATALOG.find((c) => c.id === cardId);

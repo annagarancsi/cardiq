@@ -31,7 +31,7 @@ export default function SignupPage() {
     } else {
       setSuccess(true);
       setLoading(false);
-      setTimeout(() => router.push("/dashboard"), 1500);
+      setTimeout(() => router.push("/onboarding"), 1500);
     }
   }
 
@@ -41,7 +41,7 @@ export default function SignupPage() {
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="text-4xl mb-4">🎉</div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Account created!</h2>
-          <p className="text-gray-500 text-sm">Taking you to your dashboard…</p>
+          <p className="text-gray-500 text-sm">Setting up your account…</p>
         </div>
       </div>
     );
