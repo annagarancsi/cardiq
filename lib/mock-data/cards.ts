@@ -578,6 +578,42 @@ export const CARD_CATALOG: CardCatalogEntry[] = [
     benefits: [],
   },
 
+  {
+    id: "macys-credit-card",
+    name: "Macy's Credit Card",
+    issuer: "Citibank (for Macy's)",
+    annualFee: 0,
+    tier: "cash-back",
+    verified: true,
+    color: "from-red-600 to-red-900",
+    benefits: [
+      {
+        id: "macys-star-rewards",
+        cardId: "macys-credit-card",
+        name: "Star Rewards",
+        description: "3% back in Star Money on Macy's purchases, redeemable on future Macy's shopping.",
+        dollarValue: 60,
+        resetFrequency: "annual",
+        category: "rewards",
+        activationRequired: false,
+        redemptionInstructions: "Star Money is automatically earned on Macy's purchases. Redeem at checkout in-store or online at macys.com.",
+        expiresAt: "2025-12-31",
+      },
+      {
+        id: "macys-birthday",
+        cardId: "macys-credit-card",
+        name: "Birthday Surprise",
+        description: "Special birthday offer sent to your email each year — typically 25% off a Macy's purchase.",
+        dollarValue: 25,
+        resetFrequency: "annual",
+        category: "bonus",
+        activationRequired: true,
+        redemptionInstructions: "Check your email around your birthday for your exclusive offer code. Use at checkout in-store or online.",
+        expiresAt: "2025-12-31",
+      },
+    ],
+  },
+
   // ─── HOTEL & AIRLINE ──────────────────────────────────────────────
   {
     id: "marriott-bonvoy-boundless",
