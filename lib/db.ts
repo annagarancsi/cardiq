@@ -24,6 +24,7 @@ function ensureDir() {
 export interface StoredUser {
   id: string;
   email: string;
+  name: string;
   passwordHash: string;
   createdAt: string;
 }

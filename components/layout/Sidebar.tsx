@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   CreditCard,
@@ -22,6 +23,14 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => { if (data.name) setUserName(data.name); })
+      .catch(() => {});
+  }, []);
 
   async function handleSignOut() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -38,6 +47,13 @@ export default function Sidebar() {
         </div>
         <span className="text-lg font-bold text-gray-900">CardIQ</span>
       </div>
+
+      {/* Greeting */}
+      {userName && (
+        <div className="px-5 py-3 border-b border-gray-100">
+          <p className="text-sm text-gray-500">Hi, <span className="font-semibold text-gray-900">{userName}</span> 👋</p>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
