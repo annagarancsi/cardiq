@@ -10,6 +10,7 @@ import {
   Zap,
   Bell,
   PieChart,
+  UserCircle,
   LogOut,
 } from "lucide-react";
 
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/optimizer", label: "Optimizer", icon: Zap },
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/portfolio", label: "Portfolio", icon: PieChart },
+  { href: "/profile", label: "Profile", icon: UserCircle },
 ];
 
 export default function Sidebar() {

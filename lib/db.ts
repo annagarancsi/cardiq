@@ -68,6 +68,26 @@ export function createUser(user: StoredUser) {
   writeUsers(users);
 }
 
+export function updateUser(id: string, updates: Partial<Pick<StoredUser, "name" | "email" | "passwordHash">>) {
+  const users = readUsers();
+  const idx = users.findIndex((u) => u.id === id);
+  if (idx === -1) return false;
+  users[idx] = { ...users[idx], ...updates };
+  writeUsers(users);
+  return true;
+}
+
+export function deleteUser(id: string) {
+  const users = readUsers();
+  const filtered = users.filter((u) => u.id !== id);
+  writeUsers(filtered);
+  // Also remove per-user data file
+  const p = userDataPath(id);
+  try {
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  } catch { /* ignore */ }
+}
+
 // ─── Per-user data ───────────────────────────────────────────────────────────
 
 function userDataPath(userId: string) {
