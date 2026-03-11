@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, CheckCircle, X, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { CARD_CATALOG } from "@/lib/mock-data/cards";
@@ -18,7 +18,7 @@ interface CardGroup {
   expanded: boolean;
 }
 
-export default function ReviewBenefitsPage() {
+function ReviewBenefitsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [cardGroups, setCardGroups] = useState<CardGroup[]>([]);
@@ -227,5 +227,17 @@ export default function ReviewBenefitsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ReviewBenefitsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-brand-50 to-indigo-100 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-brand-500 animate-spin" />
+      </div>
+    }>
+      <ReviewBenefitsContent />
+    </Suspense>
   );
 }
