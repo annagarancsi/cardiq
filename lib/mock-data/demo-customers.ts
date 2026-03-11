@@ -173,6 +173,10 @@ const emilyTransactions: Transaction[] = [
 // ─── Exported demo customers ──────────────────────────────────────────────────
 export const DEMO_CUSTOMERS: DemoCustomer[] = [
   {
+    // Sarah Chen — NYC foodie. Grubhub/Five Guys/Cheesecake Factory → dining credit full.
+    // Resy/Per Se txns → resy used. Uber rides → uber-cash used. No Dunkin'.
+    // CitiTravel $650 hotel Jan 2025 → hotel credit used.
+    // 5 Marriott stays (Miami, Chicago, LA, Tokyo, NYC) → free night + Silver used.
     id: "demo-customer-1",
     email: "sarah.chen@demo.com",
     password: "Demo1234!",
@@ -181,16 +185,23 @@ export const DEMO_CUSTOMERS: DemoCustomer[] = [
     cardIds: ["amex-gold", "citi-strata-premier", "marriott-bonvoy-boundless"],
     transactions: sarahTransactions,
     benefitUsage: {
-      "amex-gold-uber-cash": { status: "used", amountUsed: 120 },
-      "amex-gold-dining": { status: "partial", amountUsed: 80 },
-      "amex-gold-resy": { status: "used", amountUsed: 100 },
-      "amex-gold-dunkin": { status: "unused", amountUsed: 0 },
-      "citi-hotel-credit": { status: "used", amountUsed: 100 },
-      "bonvoy-free-night": { status: "used", amountUsed: 150 },
-      "bonvoy-silver": { status: "used", amountUsed: 50 },
+      "amex-gold-uber-cash": { status: "used",    amountUsed: 120 },
+      "amex-gold-dining":    { status: "used",    amountUsed: 120 },
+      "amex-gold-resy":      { status: "used",    amountUsed: 100 },
+      "amex-gold-dunkin":    { status: "unused",  amountUsed: 0   },
+      "citi-hotel-credit":   { status: "used",    amountUsed: 100 },
+      "bonvoy-free-night":   { status: "used",    amountUsed: 150 },
+      "bonvoy-silver":       { status: "used",    amountUsed: 50  },
     },
   },
   {
+    // Marcus Johnson — Atlanta heavy traveler. 8 Delta flights ~$11k → flight credit earned.
+    // Centurion Lounge ATL + Delta SkyClub → lounge used. CLEAR Apr 2024 → clear used.
+    // Saks Mar 2024 → saks used. AmexTravel hotel Oct 2024 → hotel partial.
+    // Uber Cash Feb 2025 txn + monthly → uber-cash used. No Walmart+.
+    // $3k+ Macy's spend → star-rewards used. Birthday offer redeemed.
+    // No Edit Hotel bookings → csr-dining unused. No rental car, no cell bill on WF.
+    // Delta spend >$10k → flight-credit fully earned.
     id: "demo-customer-2",
     email: "marcus.johnson@demo.com",
     password: "Demo1234!",
@@ -199,25 +210,33 @@ export const DEMO_CUSTOMERS: DemoCustomer[] = [
     cardIds: ["amex-platinum", "chase-sapphire-reserve", "capital-one-savor", "wells-fargo-active-cash", "delta-skymiles-gold", "discover-it-cash-back", "macys-credit-card"],
     transactions: marcusTransactions,
     benefitUsage: {
-      "amex-plat-uber-cash": { status: "used", amountUsed: 200 },
-      "amex-plat-airline": { status: "used", amountUsed: 200 },
-      "amex-plat-hotel": { status: "partial", amountUsed: 100 },
-      "amex-plat-clear": { status: "used", amountUsed: 189 },
-      "amex-plat-walmart": { status: "unused", amountUsed: 0 },
-      "amex-plat-digital": { status: "partial", amountUsed: 120 },
-      "amex-plat-saks": { status: "used", amountUsed: 100 },
-      "amex-plat-lounge": { status: "used", amountUsed: 300 },
-      "csr-travel-credit": { status: "used", amountUsed: 300 },
-      "csr-lounge": { status: "used", amountUsed: 250 },
-      "csr-dining": { status: "unused", amountUsed: 0 },
-      "csr-rental-car": { status: "unused", amountUsed: 0 },
-      "wfac-cell-protection": { status: "unused", amountUsed: 0 },
-      "delta-checked-bag": { status: "used", amountUsed: 180 },
-      "delta-flight-credit": { status: "partial", amountUsed: 100 },
-      "discover-5pct-q2": { status: "used", amountUsed: 75 },
+      "amex-plat-uber-cash":  { status: "used",    amountUsed: 200 },
+      "amex-plat-airline":    { status: "used",    amountUsed: 200 },
+      "amex-plat-hotel":      { status: "partial", amountUsed: 100 },
+      "amex-plat-clear":      { status: "used",    amountUsed: 189 },
+      "amex-plat-walmart":    { status: "unused",  amountUsed: 0   },
+      "amex-plat-digital":    { status: "partial", amountUsed: 120 },
+      "amex-plat-saks":       { status: "used",    amountUsed: 100 },
+      "amex-plat-lounge":     { status: "used",    amountUsed: 300 },
+      "csr-travel-credit":    { status: "used",    amountUsed: 300 },
+      "csr-lounge":           { status: "used",    amountUsed: 250 },
+      "csr-dining":           { status: "unused",  amountUsed: 0   },
+      "csr-rental-car":       { status: "unused",  amountUsed: 0   },
+      "wfac-cell-protection": { status: "unused",  amountUsed: 0   },
+      "delta-checked-bag":    { status: "used",    amountUsed: 180 },
+      "delta-flight-credit":  { status: "used",    amountUsed: 200 },
+      "discover-5pct-q2":     { status: "used",    amountUsed: 75  },
+      "macys-star-rewards":   { status: "used",    amountUsed: 60  },
+      "macys-birthday":       { status: "used",    amountUsed: 25  },
     },
   },
   {
+    // Emily Rodriguez — SF young professional. Fine dining (Benu, French Laundry, Quince)
+    // + Grubhub/Uber Eats → dining credit full. Resy-Quince txn May 2024 → resy used.
+    // Uber Eats Aug 2024 + Aug 2023 but not monthly → uber-cash partial.
+    // SFO Priority Pass Dec 2024 + Mar 2023 → lounge used.
+    // United + Airbnb + Alaska → travel credit used. No Edit Hotel → csr-dining unused.
+    // No rental car, no Dunkin'.
     id: "demo-customer-3",
     email: "emily.rodriguez@demo.com",
     password: "Demo1234!",
@@ -226,14 +245,14 @@ export const DEMO_CUSTOMERS: DemoCustomer[] = [
     cardIds: ["amex-gold", "chase-sapphire-reserve"],
     transactions: emilyTransactions,
     benefitUsage: {
-      "amex-gold-uber-cash": { status: "partial", amountUsed: 60 },
-      "amex-gold-dining": { status: "used", amountUsed: 120 },
-      "amex-gold-resy": { status: "used", amountUsed: 100 },
-      "amex-gold-dunkin": { status: "unused", amountUsed: 0 },
-      "csr-travel-credit": { status: "used", amountUsed: 300 },
-      "csr-lounge": { status: "used", amountUsed: 250 },
-      "csr-dining": { status: "partial", amountUsed: 200 },
-      "csr-rental-car": { status: "unused", amountUsed: 0 },
+      "amex-gold-uber-cash": { status: "partial", amountUsed: 60  },
+      "amex-gold-dining":    { status: "used",    amountUsed: 120 },
+      "amex-gold-resy":      { status: "used",    amountUsed: 100 },
+      "amex-gold-dunkin":    { status: "unused",  amountUsed: 0   },
+      "csr-travel-credit":   { status: "used",    amountUsed: 300 },
+      "csr-lounge":          { status: "used",    amountUsed: 250 },
+      "csr-dining":          { status: "unused",  amountUsed: 0   },
+      "csr-rental-car":      { status: "unused",  amountUsed: 0   },
     },
   },
 ];
