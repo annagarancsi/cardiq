@@ -140,6 +140,11 @@ export default function DashboardPage() {
         </button>
       </div>
 
+      {/* Disclaimer */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
+        <p className="text-sm text-yellow-800 font-medium">CardIQ has its limits — check to make sure all benefits are recorded correctly</p>
+      </div>
+
       {/* Portfolio summary */}
       <PortfolioSummaryComponent summary={summary} />
 
